@@ -1,24 +1,68 @@
-import logo from './logo.svg';
 import './App.css';
-
+import { characters } from './characters';
+import Grid from './components/Grid';
+import { useEffect, useState } from 'react';
+import JSConfetti from 'js-confetti';
+import CorrectAnswer from './assets/correct-answer.mp3';
+import WrongAnswer from './assets/wrong-answer.mp3';
+const jsConfetti = new JSConfetti();
 function App() {
+  const [charArray, setCharArray] = useState(characters)
+  const [firstChoice, setFirstChoice] = useState('');
+  const [secondChoice, setSecondChoice] = useState('');
+  const [clickCount, setClickCount] = useState(0);
+  const [score, setScore] = useState(0);
+  useEffect(() => {
+    if (clickCount === 2) {
+      setFirstChoice('');
+      setSecondChoice('')
+      setClickCount(0)
+    }
+    if (clickCount > 1) {
+      if (firstChoice === secondChoice) {
+        setScore(score + 5)
+        setCharArray(prev => prev.map((card) => {
+          if (card.name === firstChoice) {
+            return { ...card, visible: true }
+          }
+          else {
+            return card
+          }
+        }))
+        document.getElementById('correct-answer').play()
+        jsConfetti.addConfetti({
+          confettiNumber: 500,
+        })
+      }
+      else {
+        document.getElementById('wrong-answer').play()
+      }
+    }
+  }, [firstChoice, secondChoice, clickCount])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <audio src={CorrectAnswer} id='correct-answer' />
+      <audio src={WrongAnswer} id='wrong-answer' />
+      <div className='final-score'>
+        <h2>Score: {score}</h2>
+      </div>
+      <div className='grid-main'>
+        {charArray.map((character) => {
+          return (
+            <Grid
+              firstChoice={firstChoice}
+              setFirstChoice={setFirstChoice}
+              secondChoice={secondChoice}
+              setSecondChoice={setSecondChoice}
+              clickCount={clickCount}
+              setClickCount={setClickCount}
+              character={character}
+            />
+          )
+        })}
+      </div>
+    </>
   );
 }
 
